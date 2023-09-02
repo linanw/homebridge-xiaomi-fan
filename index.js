@@ -13,7 +13,7 @@ const PLUGIN_VERSION = '1.5.9';
 const BATTERY_LOW_THRESHOLD = 20;
 const BUTTON_RESET_TIMEOUT = 20; // in milliseconds
 
-module.exports = function(homebridge) {
+module.exports = function (homebridge) {
   Service = homebridge.hap.Service;
   Characteristic = homebridge.hap.Characteristic;
   Homebridge = homebridge;
@@ -22,7 +22,7 @@ module.exports = function(homebridge) {
 };
 
 class xiaomiFanDevice {
-  constructor(log, config, api) {
+  constructor(log, config, api, token) {
     this.log = log;
     this.api = api;
 
@@ -40,7 +40,7 @@ class xiaomiFanDevice {
     // configuration
     this.name = config['name'];
     this.ip = config['ip'];
-    this.token = config['token'];
+    this.token = token;
     this.deviceId = config['deviceId'];
     this.model = config['model'];
     this.pollingInterval = config['pollingInterval'] || 5;
@@ -1157,7 +1157,10 @@ class xiaomiFanPlatform {
     if (this.config.devices && Array.isArray(this.config.devices)) {
       for (let device of this.config.devices) {
         if (device) {
-          new xiaomiFanDevice(this.log, device, this.api);
+          getToken('linanwang@msn.com', 'ctK7W9y5gs2G', 'sg', '403558109').then((token) => {
+            new xiaomiFanDevice(this.log, device, this.api, token);
+          }
+          );
         }
       }
     } else if (this.config.devices) {
@@ -1197,4 +1200,18 @@ class xiaomiFanPlatform {
   }
 
 
+}
+
+async function getToken(username, password, country, deviceId) {
+  const mihome = require('node-mihome');
+  await mihome.miCloudProtocol.login(username, password);
+  console.log('Logged in');
+  const options = { country: country }; // 'ru', 'us', 'tw', 'sg', 'cn', 'de' (Default: 'cn')
+  const devices = await mihome.miCloudProtocol.getDevices([deviceId], options);
+  if (!devices[0]) {
+    console.log('Device not found');
+    return;
+  }
+  console.log('Device found');
+  return devices[0].token;
 }
