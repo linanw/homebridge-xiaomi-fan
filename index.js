@@ -233,8 +233,12 @@ class xiaomiFanDevice {
       .on('set', this.setSwingMode.bind(this));
     this.fanService
       .addCharacteristic(Characteristic.RotationDirection) // used to switch between buzzer levels on supported devices
-      .on('get', this.getRotationDirection.bind(this))
-      .on('set', this.setRotationDirection.bind(this));
+      .on('get', (callback) => {
+        this.getAngleButtonState(callback, 30);
+      })
+      .on('set', (state, callback) => {
+        this.setAngleButtonState(state, callback, 30);
+      });
 
     this.fanAccesory.addService(this.fanService);
   }
@@ -645,7 +649,7 @@ class xiaomiFanDevice {
       callback();
     } else {
       // throw no error on devices which does not support the buzzer control, simply do nothing
-    //  callback(this.createError(`cannot set buzzer level`));
+      //  callback(this.createError(`cannot set buzzer level`));
     }
   }
 
